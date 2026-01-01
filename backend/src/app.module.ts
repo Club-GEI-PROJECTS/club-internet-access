@@ -9,12 +9,15 @@ import { PaymentModule } from './payment/payment.module';
 import { WiFiAccountsModule } from './wifi-accounts/wifi-accounts.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { BandwidthModule } from './bandwidth/bandwidth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './entities/user.entity';
 import { WiFiAccount } from './entities/wifi-account.entity';
 import { Payment } from './entities/payment.entity';
 import { Session } from './entities/session.entity';
+import { PasswordResetToken } from './entities/password-reset-token.entity';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -26,13 +29,16 @@ import { Session } from './entities/session.entity';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT) || 5432,
+      port: parseInt(process.env.DB_PORT || '5432'),
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'password',
       database: process.env.DB_DATABASE || 'internet_access',
-      entities: [User, WiFiAccount, Payment, Session],
+      entities: [User, WiFiAccount, Payment, Session, PasswordResetToken],
       synchronize: process.env.NODE_ENV !== 'production',
       logging: process.env.NODE_ENV === 'development',
+      retryAttempts: 10,
+      retryDelay: 3000,
+      autoLoadEntities: true,
     }),
     MikroTikModule,
     UsersModule,
@@ -41,6 +47,8 @@ import { Session } from './entities/session.entity';
     WiFiAccountsModule,
     SessionsModule,
     DashboardModule,
+    BandwidthModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -62,7 +62,7 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
       await this.client.connect();
       this.connected = true;
       this.logger.log(`✅ Connected to MikroTik at ${host}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Failed to connect to MikroTik: ${error.message}`);
       this.connected = false;
     }
@@ -74,7 +74,7 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
         await this.client.close();
         this.connected = false;
         this.logger.log('Disconnected from MikroTik');
-      } catch (error) {
+      } catch (error: any) {
         this.logger.error(`Error disconnecting: ${error.message}`);
       }
     }
@@ -93,20 +93,22 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
     this.ensureConnected();
 
     try {
-      const menu = this.client.menu('/ip/hotspot/user');
-      const result = await menu.add({
-        name: userData.name,
-        password: userData.password,
-        profile: userData.profile || 'default',
-        'limit-uptime': userData['limit-uptime'] || '1d',
-        'shared-users': userData['shared-users'] || 1,
-        comment: userData.comment || '',
-        disabled: userData.disabled || false,
-      });
+      // Using RouterOS API command format
+      const cmd = [
+        '/ip/hotspot/user/add',
+        `=name=${userData.name}`,
+        `=password=${userData.password}`,
+        `=profile=${userData.profile || 'default'}`,
+        `=limit-uptime=${userData['limit-uptime'] || '1d'}`,
+        `=shared-users=${userData['shared-users'] || 1}`,
+        `=comment=${userData.comment || ''}`,
+        `=disabled=${userData.disabled || false}`,
+      ];
 
+      const result = await (this.client as any).write(cmd);
       this.logger.log(`✅ Created hotspot user: ${userData.name}`);
       return result;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Failed to create user ${userData.name}: ${error.message}`);
       throw new Error(`Failed to create hotspot user: ${error.message}`);
     }
@@ -119,16 +121,15 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
     this.ensureConnected();
 
     try {
-      const menu = this.client.menu('/ip/hotspot/user');
-      const users = await menu.query({ name: username }).find();
-      
-      if (users.length === 0) {
+      const users = await this.getHotspotUser(username);
+      if (!users) {
         throw new Error(`User ${username} not found`);
       }
 
-      await menu.remove(users[0].id);
+      const cmd = ['/ip/hotspot/user/remove', `=.id=${users['.id']}`];
+      await (this.client as any).write(cmd);
       this.logger.log(`✅ Deleted hotspot user: ${username}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Failed to delete user ${username}: ${error.message}`);
       throw new Error(`Failed to delete hotspot user: ${error.message}`);
     }
@@ -141,15 +142,15 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
     this.ensureConnected();
 
     try {
-      const menu = this.client.menu('/ip/hotspot/user');
-      const users = await menu.query({ name: username }).find();
+      const cmd = ['/ip/hotspot/user/print', `?name=${username}`];
+      const users = await (this.client as any).write(cmd);
       
-      if (users.length === 0) {
+      if (!users || users.length === 0) {
         return null;
       }
 
       return users[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Failed to get user ${username}: ${error.message}`);
       throw new Error(`Failed to get hotspot user: ${error.message}`);
     }
@@ -162,10 +163,10 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
     this.ensureConnected();
 
     try {
-      const menu = this.client.menu('/ip/hotspot/user');
-      const users = await menu.getAll();
-      return users;
-    } catch (error) {
+      const cmd = ['/ip/hotspot/user/print'];
+      const users = await (this.client as any).write(cmd);
+      return users || [];
+    } catch (error: any) {
       this.logger.error(`❌ Failed to list users: ${error.message}`);
       throw new Error(`Failed to list hotspot users: ${error.message}`);
     }
@@ -178,9 +179,9 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
     this.ensureConnected();
 
     try {
-      const menu = this.client.menu('/ip/hotspot/active');
-      const activeUsers = await menu.getAll();
-      return activeUsers.map((user: any) => ({
+      const cmd = ['/ip/hotspot/active/print'];
+      const activeUsers = await (this.client as any).write(cmd);
+      return (activeUsers || []).map((user: any) => ({
         id: user['.id'],
         user: user.user,
         address: user.address,
@@ -190,7 +191,7 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
         'packets-in': parseInt(user['packets-in'] || '0'),
         'packets-out': parseInt(user['packets-out'] || '0'),
       }));
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Failed to get active users: ${error.message}`);
       throw new Error(`Failed to get active users: ${error.message}`);
     }
@@ -203,10 +204,10 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
     this.ensureConnected();
 
     try {
-      const menu = this.client.menu('/ip/hotspot/active');
-      await menu.remove(sessionId);
+      const cmd = ['/ip/hotspot/active/remove', `=.id=${sessionId}`];
+      await (this.client as any).write(cmd);
       this.logger.log(`✅ Disconnected user session: ${sessionId}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Failed to disconnect user: ${error.message}`);
       throw new Error(`Failed to disconnect user: ${error.message}`);
     }
@@ -219,16 +220,15 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
     this.ensureConnected();
 
     try {
-      const menu = this.client.menu('/ip/hotspot/user');
-      const users = await menu.query({ name: username }).find();
-      
-      if (users.length === 0) {
+      const user = await this.getHotspotUser(username);
+      if (!user) {
         throw new Error(`User ${username} not found`);
       }
 
-      await menu.set(users[0].id, { disabled: true });
+      const cmd = ['/ip/hotspot/user/set', `=.id=${user['.id']}`, '=disabled=true'];
+      await (this.client as any).write(cmd);
       this.logger.log(`✅ Disabled user: ${username}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Failed to disable user ${username}: ${error.message}`);
       throw new Error(`Failed to disable user: ${error.message}`);
     }
@@ -241,16 +241,15 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
     this.ensureConnected();
 
     try {
-      const menu = this.client.menu('/ip/hotspot/user');
-      const users = await menu.query({ name: username }).find();
-      
-      if (users.length === 0) {
+      const user = await this.getHotspotUser(username);
+      if (!user) {
         throw new Error(`User ${username} not found`);
       }
 
-      await menu.set(users[0].id, { disabled: false });
+      const cmd = ['/ip/hotspot/user/set', `=.id=${user['.id']}`, '=disabled=false'];
+      await (this.client as any).write(cmd);
       this.logger.log(`✅ Enabled user: ${username}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Failed to enable user ${username}: ${error.message}`);
       throw new Error(`Failed to enable user: ${error.message}`);
     }
@@ -270,4 +269,3 @@ export class MikroTikService implements OnModuleInit, OnModuleDestroy {
     }
   }
 }
-

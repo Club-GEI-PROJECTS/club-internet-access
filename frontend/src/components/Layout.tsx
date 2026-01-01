@@ -6,6 +6,7 @@ import {
   CreditCard, 
   Users, 
   Activity,
+  TrendingUp,
   LogOut,
   Menu,
   X
@@ -21,6 +22,7 @@ export default function Layout() {
     { name: 'Comptes Wi-Fi', href: '/wifi-accounts', icon: Wifi },
     { name: 'Paiements', href: '/payments', icon: CreditCard },
     { name: 'Sessions', href: '/sessions', icon: Activity },
+    { name: 'Bande Passante', href: '/bandwidth', icon: TrendingUp },
     ...(user?.role === 'admin' ? [{ name: 'Utilisateurs', href: '/users', icon: Users }] : []),
   ]
 

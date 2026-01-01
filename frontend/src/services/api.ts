@@ -53,6 +53,16 @@ export const authService = {
     const response = await api.get('/auth/profile')
     return response.data
   },
+
+  forgotPassword: async (email: string) => {
+    const response = await api.post('/auth/forgot-password', { email })
+    return response.data
+  },
+
+  resetPassword: async (token: string, newPassword: string) => {
+    const response = await api.post('/auth/reset-password', { token, newPassword })
+    return response.data
+  },
 }
 
 export const wifiAccountsService = {
@@ -176,6 +186,28 @@ export const usersService = {
 
   delete: async (id: string) => {
     await api.delete(`/users/${id}`)
+  },
+}
+
+export const bandwidthService = {
+  getRealTimeUsage: async () => {
+    const response = await api.get('/bandwidth/realtime')
+    return response.data
+  },
+
+  getStats: async () => {
+    const response = await api.get('/bandwidth/stats')
+    return response.data
+  },
+
+  getUserBandwidth: async (username: string) => {
+    const response = await api.get(`/bandwidth/user/${username}`)
+    return response.data
+  },
+
+  getHistory: async (days: number = 7) => {
+    const response = await api.get(`/bandwidth/history?days=${days}`)
+    return response.data
   },
 }
 

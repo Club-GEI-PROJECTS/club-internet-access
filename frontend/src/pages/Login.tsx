@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { authService } from '../services/api'
 import toast from 'react-hot-toast'
@@ -81,7 +81,16 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
+          <div className="mt-6 text-center">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Mot de passe oublié?
+            </Link>
+          </div>
+
+          <div className="mt-4 text-center text-sm text-gray-500">
             <p>Accès réservé au personnel autorisé</p>
           </div>
         </div>

@@ -57,17 +57,22 @@ NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
 ```
 
-### 4. Créer l'utilisateur admin
+### 4. Créer les données de test
 
 ```bash
 npm run seed:admin
 ```
 
-Cela créera un utilisateur admin par défaut :
-- **Email**: `admin@unikin.cd`
-- **Password**: `admin123`
+Cela créera :
+- **1 Admin** : admin@unikin.cd / password123
+- **2 Agents** : agent1@unikin.cd, agent2@unikin.cd / password123
+- **2 Étudiants** : student1@student.unikin.cd, student2@student.unikin.cd / password123
+- **5 Comptes Wi-Fi** de test (actifs, expirés, différentes durées)
+- **5 Paiements** de test (complétés, en attente, échoués)
 
-⚠️ **Important**: Changez le mot de passe après la première connexion !
+⚠️ **Important**: Changez les mots de passe après la première connexion !
+
+Voir [SEED_GUIDE.md](./SEED_GUIDE.md) pour plus de détails sur les données créées.
 
 ### 5. Démarrer l'application
 

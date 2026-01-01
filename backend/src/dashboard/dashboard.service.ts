@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WiFiAccount } from '../entities/wifi-account.entity';
-import { Payment } from '../entities/payment.entity';
+import { Payment, PaymentStatus } from '../entities/payment.entity';
 import { Session } from '../entities/session.entity';
 import { User } from '../entities/user.entity';
 import { MikroTikService } from '../mikrotik/mikrotik.service';
@@ -32,23 +32,29 @@ export class DashboardService {
       totalSessions,
       activeSessions,
       totalUsers,
-      mikrotikActiveUsers,
     ] = await Promise.all([
       this.wifiAccountsRepository.count(),
-      this.wifiAccountsRepository.count({ where: { isActive: true, isExpired: false } } }),
+      this.wifiAccountsRepository.count({ where: { isActive: true, isExpired: false } }),
       this.wifiAccountsRepository.count({ where: { isExpired: true } }),
       this.paymentsRepository.count(),
-      this.paymentsRepository.count({ where: { status: 'completed' } }),
+      this.paymentsRepository.count({ where: { status: PaymentStatus.COMPLETED } }),
       this.paymentsRepository
         .createQueryBuilder('payment')
         .select('SUM(payment.amount)', 'total')
-        .where('payment.status = :status', { status: 'completed' })
+        .where('payment.status = :status', { status: PaymentStatus.COMPLETED })
         .getRawOne(),
       this.sessionsRepository.count(),
       this.sessionsRepository.count({ where: { isActive: true } }),
       this.usersRepository.count(),
-      this.mikrotikService.getActiveUsers().catch(() => []),
     ]);
+
+    // Get MikroTik active users separately to handle errors gracefully
+    let mikrotikActiveUsers: any[] = [];
+    try {
+      mikrotikActiveUsers = await this.mikrotikService.getActiveUsers();
+    } catch (error) {
+      // Silently fail if MikroTik is not available
+    }
 
     const totalBytes = await this.sessionsRepository
       .createQueryBuilder('session')
@@ -116,7 +122,7 @@ export class DashboardService {
       .addSelect('COUNT(*)', 'count')
       .addSelect('SUM(payment.amount)', 'revenue')
       .where('payment.createdAt >= :startDate', { startDate })
-      .andWhere('payment.status = :status', { status: 'completed' })
+      .andWhere('payment.status = :status', { status: PaymentStatus.COMPLETED })
       .groupBy('DATE(payment.createdAt)')
       .orderBy('date', 'ASC')
       .getRawMany();

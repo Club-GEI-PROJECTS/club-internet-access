@@ -2,10 +2,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import WiFiAccounts from './pages/WiFiAccounts'
 import Payments from './pages/Payments'
 import Sessions from './pages/Sessions'
+import Bandwidth from './pages/Bandwidth'
 import Users from './pages/Users'
 import Layout from './components/Layout'
 
@@ -27,6 +30,8 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/"
         element={
@@ -39,6 +44,7 @@ function AppRoutes() {
         <Route path="wifi-accounts" element={<WiFiAccounts />} />
         <Route path="payments" element={<Payments />} />
         <Route path="sessions" element={<Sessions />} />
+        <Route path="bandwidth" element={<Bandwidth />} />
         <Route path="users" element={<Users />} />
       </Route>
     </Routes>

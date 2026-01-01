@@ -44,12 +44,20 @@ services:
       MIKROTIK_HOST: ${MIKROTIK_HOST:-192.168.88.1}
       MIKROTIK_PORT: ${MIKROTIK_PORT:-8728}
       MIKROTIK_USER: ${MIKROTIK_USER:-admin}
-      MIKROTIK_PASSWORD: ${MIKROTIK_PASSWORD}
+      MIKROTIK_PASSWORD: ${MIKROTIK_PASSWORD:-}
       PORT: 4000
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: noreply@unikin.cd
+      APP_NAME: Club Internet Access UNIKIN
     depends_on:
       postgres:
         condition: service_healthy
+      mailhog:
+        condition: service_started
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -90,6 +98,19 @@ services:
     networks:
       - internet-access-network
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: internet-access-mailhog
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - internet-access-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   pgadmin_data:
@@ -97,4 +118,5 @@ volumes:
 networks:
   internet-access-network:
     driver: bridge
+
 

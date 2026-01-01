@@ -52,8 +52,9 @@ docker-compose exec backend npm run seed:admin
 - **Backend API**: http://localhost:4000/api
 - **PgAdmin**: http://localhost:5050 (admin@unikin.cd / admin)
 - **Adminer**: http://localhost:8080
+- **MailHog**: http://localhost:8025 (pour les emails de test)
 
-Voir [DOCKER.md](./DOCKER.md) pour plus de détails.
+Voir [SETUP.md](./SETUP.md) pour le guide complet de démarrage.
 
 ### Option 2: Installation Manuelle
 
@@ -115,19 +116,18 @@ Voir [backend/INSTALLATION.md](./backend/INSTALLATION.md) pour la configuration 
 ## 📚 Documentation
 
 ### Docker
-- [Guide Docker complet](./DOCKER.md) - Configuration et utilisation Docker
+- [Guide Docker complet](./backend/DOCKER.md) - Configuration et utilisation Docker
+- [Guide de configuration et démarrage](./SETUP.md) - Guide complet de setup
 
 ### Backend
 - [Guide d'installation](./backend/INSTALLATION.md)
 - [Documentation API](./backend/API.md)
 - [Configuration complète](./backend/CONFIGURATION_COMPLETE.md)
+- [Guide de seeding](./backend/SEED_GUIDE.md)
+- [Reset de mot de passe](./backend/PASSWORD_RESET.md)
 
 ### Frontend
 - [README Frontend](./frontend/README.md)
-- [Configuration complète](./FRONTEND_COMPLETE.md)
-
-### Démarrage Rapide
-- [Guide de démarrage rapide](./QUICK_START.md)
 
 ## 🛠️ Technologies
 

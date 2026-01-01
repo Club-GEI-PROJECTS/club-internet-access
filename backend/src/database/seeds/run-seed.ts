@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { seedAdmin } from './admin.seed';
+import { seedDevData } from './dev-data.seed';
 
 async function runSeed() {
   const dataSource = new DataSource({
@@ -15,12 +16,19 @@ async function runSeed() {
 
   try {
     await dataSource.initialize();
-    console.log('📦 Database connected');
+    console.log('📦 Database connected\n');
 
+    // Seed admin user
     await seedAdmin(dataSource);
 
+    // Seed development data if NODE_ENV is development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('');
+      await seedDevData(dataSource);
+    }
+
     await dataSource.destroy();
-    console.log('✅ Seed completed');
+    console.log('\n✅ Seed completed');
   } catch (error) {
     console.error('❌ Error running seed:', error);
     process.exit(1);
