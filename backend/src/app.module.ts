@@ -28,10 +28,10 @@ import { NotificationsModule } from './notifications/notifications.module';
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
+      host: process.env.DB_HOST || 'postgres',
       port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
+      username: process.env.DB_USERNAME || 'unikin_user',
+      password: process.env.DB_PASSWORD || 'unikin_password',
       database: process.env.DB_DATABASE || 'internet_access',
       entities: [User, WiFiAccount, Payment, Session, PasswordResetToken],
       synchronize: process.env.NODE_ENV !== 'production',
